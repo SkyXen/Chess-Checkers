@@ -1,63 +1,63 @@
 import numpy as np
+import ChessEngine
 
 def encode_board(board):
-    board_state = board.current_board;
-    encoded = np.zeros([8,8,22]).astype(int)
-    encoder_dict = {"R":0, "N":1, "B":2, "Q":3, "K":4, "P":5, "r":6, "n":7, "b":8, "q":9, "k":10, "p":11}
+    board_state = board.board;
+    encoded = np.zeros([8,8,14]).astype(int)
+    encoder_dict = {"bR":0, "bN":1, "bB":2, "bQ":3, "bK":4, "bP":5, "wR":6, "wN":7, "wB":8, "wQ":9, "wK":10, "--":11}
     for i in range(8):
         for j in range(8):
-            if board_state[i,j] != " ":
+            if board_state[i,j] != "--":
                 encoded[i,j,encoder_dict[board_state[i,j]]] = 1
-    if board.player == 1:
+    if board.whiteToMove:
         encoded[:,:,12] = 1 # player to move
-    if board.K_move_count != 0:
-            encoded[:,:,13] = 1 # cannot castle queenside for white
-            encoded[:,:,14] = 1 # cannot castle kingside for white
-    if board.K_move_count == 0 and board.R1_move_count != 0:
-            encoded[:,:,13] = 1
-    if board.K_move_count == 0 and board.R2_move_count != 0:
-            encoded[:,:,14] = 1
-    if board.k_move_count != 0:
-            encoded[:,:,15] = 1 # cannot castle queenside for black
-            encoded[:,:,16] = 1 # cannot castle kingside for black
-    if board.k_move_count == 0 and board.r1_move_count != 0:
-            encoded[:,:,15] = 1
-    if board.k_move_count == 0 and board.r2_move_count != 0:
-            encoded[:,:,16] = 1
-    encoded[:,:,17] = board.move_count
-    encoded[:,:,18] = board.repetitions_w
-    encoded[:,:,19] = board.repetitions_b
-    encoded[:,:,20] = board.no_progress_count
-    encoded[:,:,21] = board.en_passant
+    # if board.K_move_count != 0:
+    #         encoded[:,:,13] = 1 # cannot castle queenside for white
+    #         encoded[:,:,14] = 1 # cannot castle kingside for white
+    # if board.K_move_count == 0 and board.R1_move_count != 0:
+    #         encoded[:,:,13] = 1
+    # if board.K_move_count == 0 and board.R2_move_count != 0:
+    #         encoded[:,:,14] = 1
+    # if board.k_move_count != 0:
+    #         encoded[:,:,15] = 1 # cannot castle queenside for black
+    #         encoded[:,:,16] = 1 # cannot castle kingside for black
+    # if board.k_move_count == 0 and board.r1_move_count != 0:
+    #         encoded[:,:,15] = 1
+    # if board.k_move_count == 0 and board.r2_move_count != 0:
+    #         encoded[:,:,16] = 1
+    encoded[:,:,13] = board.moveCount
+    # encoded[:,:,18] = board.repetitions_w
+    # encoded[:,:,19] = board.repetitions_b
+    # encoded[:,:,20] = board.no_progress_count
+    # encoded[:,:,21] = board.en_passant
     return encoded
 
 def decode_board(encoded):
-    decoded = np.zeros([8,8]).astype(str)
-    decoded[decoded == "0.0"] = " "
-    decoder_dict = {0:"R", 1:"N", 2:"B", 3:"Q", 4:"K", 5:"P", 6:"r", 7:"n", 8:"b", 9:"q", 10:"k", 11:"p"}
+    decoded = ChessEngine.GameState()
+    decoded.board[:,:] = "--"
+    decoder_dict = {0:"bR", 1:"bN", 2:"bB", 3:"bQ", 4:"bK", 5:"bP", 6:"wR", 7:"wN", 8:"wB", 9:"wQ", 10:"wK", 11:"wP"}
     for i in range(8):
         for j in range(8):
             for k in range(12):
                 if encoded[i,j,k] == 1:
-                    decoded[i,j] = decoder_dict[k]
-    board = board()
-    board.current_board = decoded
-    if encoded[0,0,12] == 1:
-        board.player = 1
-    if encoded[0,0,13] == 1:
-        board.R1_move_count = 1
-    if encoded[0,0,14] == 1:
-        board.R2_move_count = 1
-    if encoded[0,0,15] == 1:
-        board.r1_move_count = 1
-    if encoded[0,0,16] == 1:
-        board.r2_move_count = 1
-    board.move_count = encoded[0,0,17]
-    board.repetitions_w = encoded[0,0,18]
-    board.repetitions_b = encoded[0,0,19]
-    board.no_progress_count = encoded[0,0,20]
-    board.en_passant = encoded[0,0,21]
-    return board
+                    decoded.board[i,j] = decoder_dict[k]
+    # board.current_board = decoded
+    if encoded[0,0,12] == 0:
+        decoded.whiteToMove = False
+    # if encoded[0,0,13] == 1:
+    #     board.R1_move_count = 1
+    # if encoded[0,0,14] == 1:
+    #     board.R2_move_count = 1
+    # if encoded[0,0,15] == 1:
+    #     board.r1_move_count = 1
+    # if encoded[0,0,16] == 1:
+    #     board.r2_move_count = 1
+    decoded.moveCount = encoded[0,0,17]
+    # board.repetitions_w = encoded[0,0,18]
+    # board.repetitions_b = encoded[0,0,19]
+    # board.no_progress_count = encoded[0,0,20]
+    # board.en_passant = encoded[0,0,21]
+    return decoded
 
 def encode_action(board,initial_pos,final_pos,underpromote=None):
     encoded = np.zeros([8,8,73]).astype(int)
