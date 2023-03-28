@@ -30,7 +30,7 @@ def main():
   playerClicks = [] #keep track of player clicks(two tuples: [(6,4),(4,4)])
   gameOver = False
   playerOne = True #If a human is playing white then this is true || if AI is playing black then this is true
-  playerTwo = True #If AI is playing white then this is true || if human is playing black then this is true 
+  playerTwo = False #If AI is playing white then this is true || if human is playing black then this is true 
   numberOfChecksWhite = 3
   numberOfChecksBlack = 3
 
@@ -101,7 +101,6 @@ def main():
           numberOfChecksBlack -= 1
       print(AIMove.getChessNotation(), numberOfChecksBlack, numberOfChecksWhite)
             
-
       moveMade = True
 
 
@@ -113,29 +112,38 @@ def main():
     
     if gs.whiteToMove and gs.inCheck() and numberOfChecksWhite == 0:
       gameOver = True
-      drawText(screen, "Black wins by CHECKMATE HUEHUE")
+      drawText(screen, "Black wins by ThreeChecks")
 
     else: 
       if gs.inCheck() and numberOfChecksBlack == 0:
         gameOver = True
-        drawText(screen, "White wins by CHECKMATE HUEHUE")
+        drawText(screen, "White wins by ThreeChecks")
 
 
-    if gs.checkMate:
+    if gs.checkMate or gs.staleMate:
       gameOver = True
-      if gs.whiteToMove:
-        drawText(screen, "Black wins by CHECKMATE")
-      else:
-        drawText(screen, "White wins by CHECKMATE")
-    elif gs.staleMate:
-      gameOver = True
-      drawText(screen, "STALEMATE")
+      drawText(screen, "STALEMATE" if gs.staleMate else "Black wins by CHECKMATE" if gs.whiteToMove else "White wins by CHECKMATE")
 
     clock.tick(MAX_FPS)
     p.display.flip()
 
   print(gs.board)
 
+
+
+def drawGameState(screen,gs,validMoves,sqSelected):
+  drawBoard(screen)#draw squares on board
+  highlightSquares(screen,gs,validMoves,sqSelected)
+  drawPieces(screen, gs.board) #draw pieces on board
+
+
+
+def drawBoard(screen):
+  colors = [p.Color("white"), p.Color("gray")]
+  for r in range(DIMENSION):
+    for c in range(DIMENSION):
+      color = colors[((r + c) % 2)]
+      p.draw.rect(screen, color, p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
 def highlightSquares(screen, gs, validMoves, sqSelected):
@@ -164,22 +172,6 @@ def highlightSquares(screen, gs, validMoves, sqSelected):
 
 
 
-
-def drawGameState(screen,gs,validMoves,sqSelected):
-  drawBoard(screen)#draw squares on board
-  highlightSquares(screen,gs,validMoves,sqSelected)
-  drawPieces(screen, gs.board) #draw pieces on board
-
-
-
-def drawBoard(screen):
-  colors = [p.Color("white"), p.Color("gray")]
-  for r in range(DIMENSION):
-    for c in range(DIMENSION):
-      color = colors[((r + c) % 2)]
-      p.draw.rect(screen, color, p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
-
-
 #draw pieces on board using current game state
 def drawPieces(screen,board):
   for r in range(DIMENSION):
@@ -193,6 +185,9 @@ def drawText(screen, text):
   textObject = font.render(text,0,p.Color("Black"))
   textLocation = p.Rect(0,0,WIDTH,HEIGHT).move(WIDTH/2 - textObject.get_width()/2, HEIGHT/2 - textObject.get_height()/2)
   screen.blit(textObject, textLocation)
+
+def drawEndGameText(screen,text):
+  pass
 
 if __name__ == "__main__":
   main()
