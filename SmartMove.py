@@ -139,6 +139,9 @@ def moveNegaMax2(gs,validMoves,turnMultiplier,checkmateDepth):
         if gs.whiteToMove:
             if gs.inCheck():
                 print('yes')
+                # for i in move[0]:
+                #     print(i.getChessNotation(), end=' ')
+                # print('\n')
                 for i in range(0, move[1]):
                     gs.undoMove()
                 continue
