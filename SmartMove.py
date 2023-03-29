@@ -42,10 +42,10 @@ def findRandomMove(validMoves):
 #     return bestPlayerMove
 
 ##Helper METHOD to make first recursive call##
-def findBestMove(gs, validMoves):
+def findBestMove(gs, validMoves, numberOfChecksWhite, numberOfChecksBlack):
     global nextMove
     nextMove = None
-    # random.shuffle(validMoves)
+    random.shuffle(validMoves)
     moveNegaMax2(gs, validMoves, 1 if gs.whiteToMove else -1, CHECKMATEDEPTH)
     # moveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
     return nextMove
@@ -132,12 +132,13 @@ def moveNegaMax2(gs,validMoves,turnMultiplier,checkmateDepth):
     # print(queue)
     while queue:
         move = queue.pop(0)
-        print(move[1])
+        # print(move[1])
         if (move[1] > checkmateDepth): break
         for i in range(0, move[1]):
             gs.makeMove(move[0][i])
         if gs.whiteToMove:
             if gs.inCheck():
+                print('yes')
                 for i in range(0, move[1]):
                     gs.undoMove()
                 continue
@@ -159,6 +160,7 @@ def moveNegaMax2(gs,validMoves,turnMultiplier,checkmateDepth):
                     queue.append((temp, move[1] + 1))
         for i in range(0, move[1]):
             gs.undoMove()
+    print('none')
     return moveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, turnMultiplier)
 
 ##A positive score is good for white, a negative score is good for black

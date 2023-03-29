@@ -90,7 +90,7 @@ def main():
 
     ##AI MOVES##
     if not gameOver and not humanTurn:
-      AIMove = SmartMove.findBestMove(gs,validMoves)
+      AIMove = SmartMove.findBestMove(gs,validMoves, numberOfChecksWhite, numberOfChecksBlack)
       if AIMove is None:
         AIMove = SmartMove.findRandomMove(validMoves)
       gs.makeMove(AIMove)
