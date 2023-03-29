@@ -1,6 +1,6 @@
 
 class GameState():
-
+  
   def __init__(self):
     self.board = [
         ["bR","bN","bB","bQ","bK","bB","bN","bR"],
@@ -11,13 +11,12 @@ class GameState():
         ["--","--","--","--","--","--","--","--"],
         ["wP","wP","wP","wP","wP","wP","wP","wP"],
         ["wR","wN","wB","wQ","wK","wB","wN","wR"]]
-
+    
     self.moveFunctions = {'P': self.getPawnMoves, 'R': self.getRookMoves, 'N': self.getKnightMoves,
                           'B': self.getBishopMoves, 'Q': self.getQueenMoves, 'K':self.getKingMoves}
 
     self.whiteToMove = True
     self.moveLog = []
-    self.moveCount = 0
     self.whiteKingLocation = (7,4)
     self.blackKingLocation = (0,4)
     self.checkMate = False
@@ -27,7 +26,6 @@ class GameState():
     self.board[move.startRow][move.startCol] = "--"
     self.board[move.endRow][move.endCol] = move.pieceMoved
     self.moveLog.append(move) #save the log of moved pieces
-    self.moveCount += 1
     self.whiteToMove = not self.whiteToMove #swap players
     #update King's location
     if move.pieceMoved == "wK":
@@ -36,12 +34,15 @@ class GameState():
     elif move.pieceMoved == "bK":
       self.blackKingLocation = (move.endRow, move.endCol)
 
+    #pawn Promotion
+    if move.isPawnPromotion:
+      self.board[move.endRow][move.endCol] = move.pieceMoved[0] + 'Q'
+
 
   #undo the above moves
   def undoMove(self):
     if len(self.moveLog) != 0:
       move = self.moveLog.pop()
-      self.moveCount -= 1
       self.board[move.startRow][move.startCol] = move.pieceMoved
       self.board[move.endRow][move.endCol] = move.pieceCaptured
       self.whiteToMove = not self.whiteToMove
@@ -94,7 +95,7 @@ class GameState():
     return False
 
 
-
+  
   def getAllPossibleMoves(self):
     moves = []
     for r in range(len(self.board)):
@@ -117,7 +118,7 @@ class GameState():
       if c+1 <= 7:
         if self.board[r-1][c+1] == "--":
           moves.append(Move((r,c),(r-1,c+1),self.board))
-
+    
       if self.board[r-1][c][0] == 'b':    #capturing forward piece
         moves.append(Move((r,c),(r-1,c),self.board))
 
@@ -131,12 +132,12 @@ class GameState():
         if c+1 <= 7:
           if self.board[r+1][c+1] == "--":
             moves.append(Move((r,c),(r+1,c+1),self.board))
-
+       
         if c>=0 and c<=7:
           if self.board[r+1][c][0] == 'w':    #capturing forward piece
             moves.append(Move((r,c),(r+1,c),self.board))
-
-
+      
+      
 
   def getRookMoves(self,r,c,moves):
     directions = ((-1,0),(0,-1),(1,0),(0,1)) #up, left, down, right
@@ -208,7 +209,7 @@ class GameState():
     self.getRookMoves(r,c,moves)
     self.getBishopMoves(r,c,moves)
 
-
+  
 
 
 class Move():
@@ -219,9 +220,9 @@ class Move():
   filesToCols = {"a":0, "b":1, "c":2, "d":3,
                    "e":4, "f":5, "g":6, "h":7}
   colsToFiles = {v: k for k, v in filesToCols.items()}
-
+  
   def __init__(self, startSq, endSq, board):
-
+    
 
     self.startRow = startSq[0]
     self.startCol = startSq[1]
@@ -229,9 +230,12 @@ class Move():
     self.endCol = endSq[1]
     self.pieceMoved = board[self.startRow][self.startCol]
     self.pieceCaptured = board[self.endRow][self.endCol]
+    self.isPawnPromotion = False
+    if (self.pieceMoved == 'wP' and self.endRow == 0) or (self.pieceMoved == 'bP' and self.endRow == 7):
+      self.isPawnPromotion = True
     self.moveID = self.startRow*1000 + self.startCol*100 + self.endRow *10 + self.endCol
 
-
+  
   #overriding the equals method
   def __eq__(self, other):
     if isinstance(other,Move):
@@ -241,7 +245,9 @@ class Move():
   def getChessNotation(self):
     #can be added to make this like real chess notation
     return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
-
+     
 
   def getRankFile(self, r, c):
     return self.colsToFiles[c] + self.rowsToRanks[r]
+
+ 
