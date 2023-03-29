@@ -1,10 +1,11 @@
 import random
- 
+
 
 pieceScore = { "K": 0, "Q": 10, "R":5, "B":3, "N":3, "P":1}
 CHECKMATE = 1000
 STALEMATE = 0
-DEPTH = 3
+DEPTH = 1
+CHECKMATEDEPTH = 10
 
 def findRandomMove(validMoves):
     return validMoves[random.randint(0,len(validMoves)-1)]
@@ -44,15 +45,16 @@ def findRandomMove(validMoves):
 def findBestMove(gs, validMoves):
     global nextMove
     nextMove = None
-    random.shuffle(validMoves)
-    moveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
+    # random.shuffle(validMoves)
+    moveNegaMax2(gs, validMoves, 1 if gs.whiteToMove else -1, CHECKMATEDEPTH)
+    # moveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
     return nextMove
 
 def minMax(gs, validMoves, depth, whiteToMove):
     global nextMove
     if depth == 0:
         return scoreMaterial(gs.board)
-    
+
     if whiteToMove:
         maxScore = -CHECKMATE
         for move in validMoves:
@@ -83,7 +85,7 @@ def moveNegaMax(gs,validMoves,depth,turnMultiplier):
     global nextMove
     if depth == 0:
         return turnMultiplier * scoreBoard(gs)
-    
+
     maxScore = -CHECKMATE
     for move in validMoves:
         gs.makeMove(move)
@@ -100,7 +102,7 @@ def moveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier):
     global nextMove
     if depth == 0:
         return turnMultiplier * scoreBoard(gs)
-    
+
     maxScore = -CHECKMATE
     for move in validMoves:
         gs.makeMove(move)
@@ -117,10 +119,68 @@ def moveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier):
             break
     return maxScore
 
+def checkCondition(gs, turnMultiplier):
+    score = 0
+    if gs.inCheck():
+        if gs.whiteToMove:
+            score = turnMultiplier * -CHECKMATE #black wins
+        else:
+            score = turnMultiplier * CHECKMATE #white wins
+    return score
+
+def moveNegaMax2(gs,validMoves,turnMultiplier, checkmateDepth):
+    global nextMove
+    queue = []
+    score = 0
+    maxScore = 0
+    for i in validMoves:
+        queue.append(([i], 1))
+    # print(queue)
+    while queue:
+        move = queue.pop(0)
+        turnMultiplier = turnMultiplier * (-1 if (move[1] % 2 == 0) else 1)
+        # print(move)
+        for i in range(0, move[1]):
+            gs.makeMove(move[0][i])
+        nextMoves = gs.getValidMoves()
+        score = checkCondition(gs, turnMultiplier)
+        if score == CHECKMATE:
+            maxScore = score
+            nextMove = move[0][0]
+            for i in range(0, move[1]):
+                gs.undoMove()
+            return maxScore
+        minscore = 0
+        maxscore = 0
+        for moves in nextMoves:
+            gs.makeMove(moves)
+            minscore = min(minscore, checkCondition(gs, turnMultiplier))
+            maxscore = max(maxscore, checkCondition(gs, turnMultiplier))
+            gs.undoMove()
+        if minscore == -CHECKMATE:
+            for i in range(0, move[1]):
+                gs.undoMove()
+            continue
+        elif minscore == 0 and maxscore == CHECKMATE:
+            maxScore = score
+            nextMove = move[0][0]
+            for i in range(0, move[1]):
+                gs.undoMove()
+            return maxScore
+        else:
+            for moves in nextMoves:
+                temp = move[0].copy()
+                temp.append(moves)
+                queue.append((temp, move[1] + 1))
+        for i in range(0, move[1]):
+            gs.undoMove()
+    return moveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, turnMultiplier)
+
 ##A positive score is good for white, a negative score is good for black
 
 def scoreBoard(gs):
-    if gs.checkMate:
+
+    if gs.inCheck():
         if gs.whiteToMove:
             return -CHECKMATE #black wins
         else:
@@ -131,9 +191,9 @@ def scoreBoard(gs):
     for row in gs.board:
         for square in row:
             if square[0] == "w":
-                score += pieceScore[square[1]]
+                score += 0 * pieceScore[square[1]]
             elif square[0] == "b":
-                score -= pieceScore[square[1]]
+                score -= 0 * pieceScore[square[1]]
 
 
     return score

@@ -29,8 +29,8 @@ def main():
   sqSelected = () #atpresent no square selected, keep track of last clicked square (tuple:(row,col))
   playerClicks = [] #keep track of player clicks(two tuples: [(6,4),(4,4)])
   gameOver = False
-  playerOne = True #If a human is playing white then this is true || if AI is playing black then this is true
-  playerTwo = False #If AI is playing white then this is true || if human is playing black then this is true 
+  playerOne = False #If a human is playing white then this is true || if AI is playing black then this is true
+  playerTwo = False #If AI is playing white then this is true || if human is playing black then this is true
   numberOfChecksWhite = 3
   numberOfChecksBlack = 3
 
@@ -43,7 +43,7 @@ def main():
 
       #mousehandler
       elif e.type == p.MOUSEBUTTONDOWN:
-        if not gameOver and humanTurn:  
+        if not gameOver and humanTurn:
           location = p.mouse.get_pos() #(x,y) location of mouse
           col = location[0]//SQ_SIZE
           row = location[1]//SQ_SIZE
@@ -55,7 +55,7 @@ def main():
             playerClicks.append(sqSelected)
           if len(playerClicks) == 2:
             move = ChessEngine.Move(playerClicks[0],playerClicks[1],gs.board)
-            
+
             print(move.getChessNotation(), numberOfChecksBlack, numberOfChecksWhite)
             for i in range(len(validMoves)):
               if move == validMoves[i]:
@@ -70,7 +70,7 @@ def main():
                 playerClicks = []
             if not moveMade:
               playerClicks = [sqSelected]
-      
+
       #key_handler
       elif e.type == p.KEYDOWN:
         if e.key == p.K_z:
@@ -100,21 +100,21 @@ def main():
         else:
           numberOfChecksBlack -= 1
       print(AIMove.getChessNotation(), numberOfChecksBlack, numberOfChecksWhite)
-            
+
       moveMade = True
 
 
     if moveMade:
       validMoves = gs.getValidMoves()
       moveMade = False
-    
+
     drawGameState(screen, gs, validMoves, sqSelected)
-    
+
     if gs.whiteToMove and gs.inCheck() and numberOfChecksWhite == 0:
       gameOver = True
       drawText(screen, "Black wins by ThreeChecks")
 
-    else: 
+    else:
       if gs.inCheck() and numberOfChecksBlack == 0:
         gameOver = True
         drawText(screen, "White wins by ThreeChecks")
