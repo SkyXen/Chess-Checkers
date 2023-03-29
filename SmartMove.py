@@ -97,10 +97,10 @@ def moveNegaMax(gs,validMoves,depth,turnMultiplier):
         gs.undoMove()
     return maxScore
 
+
 def moveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier):
     global nextMove
     if depth == 0:
-        wcount,bcount = ChessMain.checks()
         return turnMultiplier * scoreBoard(gs)
     
     maxScore = -CHECKMATE
@@ -118,7 +118,6 @@ def moveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier):
         if alpha >=beta:
             break
     return maxScore
-
 
 def moveNegaMaxAlphaBeta1(gs, validMoves,depth, alpha, beta, turnMultiplier):
     global nextMove
@@ -169,9 +168,8 @@ def scoreboard3(gs):
     return score
 
     
-
-
 def scoreBoard(gs):
+    white_checks,black_checks = ChessMain.checks()
 
     if gs.checkMate:
         if gs.whiteToMove:
@@ -189,10 +187,14 @@ def scoreBoard(gs):
             elif square[0] == "b":
                 score -= pieceScore[square[1]]
                 #print(bcount)
+    if black_checks >= 2:
+        return 1000
+    elif white_checks >= 2:
+        return 1000
+    else:
+        score += white_checks - black_checks
 
     return score
-
-
 def scoreBoard2(gs,wcount,bcount):
     score = 0
     if gs.checkMate:
