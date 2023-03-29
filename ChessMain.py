@@ -30,7 +30,7 @@ def main():
   playerClicks = [] #keep track of player clicks(two tuples: [(6,4),(4,4)])
   gameOver = False
   playerOne = False #If a human is playing white then this is true || if AI is playing black then this is true
-  playerTwo = False #If AI is playing white then this is true || if human is playing black then this is true
+  playerTwo = True #If AI is playing white then this is true || if human is playing black then this is true
   numberOfChecksWhite = 3
   numberOfChecksBlack = 3
 

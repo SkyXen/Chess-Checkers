@@ -4,8 +4,8 @@ import random
 pieceScore = { "K": 0, "Q": 10, "R":5, "B":3, "N":3, "P":1}
 CHECKMATE = 1000
 STALEMATE = 0
-DEPTH = 1
-CHECKMATEDEPTH = 10
+DEPTH = 3
+CHECKMATEDEPTH = 3
 
 def findRandomMove(validMoves):
     return validMoves[random.randint(0,len(validMoves)-1)]
@@ -119,16 +119,10 @@ def moveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier):
             break
     return maxScore
 
-def checkCondition(gs, turnMultiplier):
-    score = 0
-    if gs.inCheck():
-        if gs.whiteToMove:
-            score = turnMultiplier * -CHECKMATE #black wins
-        else:
-            score = turnMultiplier * CHECKMATE #white wins
-    return score
+def checkCondition(gs):
+    return CHECKMATE if gs.incheck() else -CHECKMATE
 
-def moveNegaMax2(gs,validMoves,turnMultiplier, checkmateDepth):
+def moveNegaMax2(gs,validMoves,turnMultiplier,checkmateDepth):
     global nextMove
     queue = []
     score = 0
@@ -138,40 +132,31 @@ def moveNegaMax2(gs,validMoves,turnMultiplier, checkmateDepth):
     # print(queue)
     while queue:
         move = queue.pop(0)
-        turnMultiplier = turnMultiplier * (-1 if (move[1] % 2 == 0) else 1)
-        # print(move)
+        print(move[1])
+        if (move[1] > checkmateDepth): break
         for i in range(0, move[1]):
             gs.makeMove(move[0][i])
-        nextMoves = gs.getValidMoves()
-        score = checkCondition(gs, turnMultiplier)
-        if score == CHECKMATE:
-            maxScore = score
-            nextMove = move[0][0]
-            for i in range(0, move[1]):
-                gs.undoMove()
-            return maxScore
-        minscore = 0
-        maxscore = 0
-        for moves in nextMoves:
-            gs.makeMove(moves)
-            minscore = min(minscore, checkCondition(gs, turnMultiplier))
-            maxscore = max(maxscore, checkCondition(gs, turnMultiplier))
-            gs.undoMove()
-        if minscore == -CHECKMATE:
-            for i in range(0, move[1]):
-                gs.undoMove()
-            continue
-        elif minscore == 0 and maxscore == CHECKMATE:
-            maxScore = score
-            nextMove = move[0][0]
-            for i in range(0, move[1]):
-                gs.undoMove()
-            return maxScore
+        if gs.whiteToMove:
+            if gs.inCheck():
+                for i in range(0, move[1]):
+                    gs.undoMove()
+                continue
+            else:
+                for i in gs.getValidMoves():
+                    temp = move[0].copy()
+                    temp.append(i)
+                    queue.append((temp, move[1] + 1))
         else:
-            for moves in nextMoves:
-                temp = move[0].copy()
-                temp.append(moves)
-                queue.append((temp, move[1] + 1))
+            if gs.inCheck():
+                nextMove = move[0][0]
+                for i in range(0, move[1]):
+                    gs.undoMove()
+                return
+            else:
+                for i in gs.getValidMoves():
+                    temp = move[0].copy()
+                    temp.append(i)
+                    queue.append((temp, move[1] + 1))
         for i in range(0, move[1]):
             gs.undoMove()
     return moveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, turnMultiplier)
