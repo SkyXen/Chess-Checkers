@@ -53,7 +53,7 @@ def minMax(gs, validMoves, depth, whiteToMove):
     global nextMove
     if depth == 0:
         return scoreMaterial(gs.board)
-    
+
     if whiteToMove:
         maxScore = -CHECKMATE
         for move in validMoves:
@@ -84,7 +84,7 @@ def moveNegaMax(gs,validMoves,depth,turnMultiplier):
     global nextMove
     if depth == 0:
         return turnMultiplier * scoreBoard(gs)
-    
+
     maxScore = -CHECKMATE
     for move in validMoves:
         gs.makeMove(move)
@@ -102,7 +102,7 @@ def moveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier):
     if depth == 0:
         wcount,bcount = ChessMain.checks()
         return turnMultiplier * scoreBoard(gs)
-    
+
     maxScore = -CHECKMATE
     for move in validMoves:
         gs.makeMove(move)
@@ -137,7 +137,7 @@ def moveNegaMaxAlphaBeta1(gs, validMoves,depth, alpha, beta, turnMultiplier):
         if beta <= alpha:
             break
     return max_value
-    
+
 
 ##A positive score is good for white, a negative score is good for black
 def scoreboard3(gs):
@@ -149,9 +149,9 @@ def scoreboard3(gs):
     elif gs.staleMate:
         return STALEMATE
     white_checks,black_checks = ChessMain.checks()
- 
+
     score = 0
-    
+
     for row in gs.board:
         for square in row:
             if square[0] == "w":
@@ -168,7 +168,7 @@ def scoreboard3(gs):
         score += white_checks - black_checks
     return score
 
-    
+
 
 
 def scoreBoard(gs):
@@ -202,7 +202,7 @@ def scoreBoard2(gs,wcount,bcount):
             return CHECKMATE #white wins
     elif gs.staleMate:
         return STALEMATE
-    
+
     elif gs.inCheck():
         if wcount == 0 and gs.whiteToMove:
             return -1200
@@ -216,7 +216,7 @@ def scoreBoard2(gs,wcount,bcount):
             score -= 400
         elif bcount == 1 and not gs.whiteToMove:
             score += 400
-    
+
     for row in gs.board:
         for square in row:
             if square[0] == "w":
@@ -240,3 +240,47 @@ def scoreMaterial(board):
 
 
     return score
+
+def moveNegaMax2(gs,validMoves,turnMultiplier,checkmateDepth):
+    global nextMove
+    queue = []
+    score = 0
+    maxScore = 0
+    for i in validMoves:
+        queue.append(([i], 1))
+    # print(queue)
+    while queue:
+        move = queue.pop(0)
+        # print(move[1])
+        if (move[1] > checkmateDepth): break
+        for i in range(0, move[1]):
+            gs.makeMove(move[0][i])
+        if gs.whiteToMove:
+            if gs.inCheck():
+                print('yes')
+                # for i in move[0]:
+                #     print(i.getChessNotation(), end=' ')
+                # print('\n')
+                for i in range(0, move[1]):
+                    gs.undoMove()
+                continue
+            else:
+                for i in gs.getValidMoves():
+                    temp = move[0].copy()
+                    temp.append(i)
+                    queue.append((temp, move[1] + 1))
+        else:
+            if gs.inCheck():
+                nextMove = move[0][0]
+                for i in range(0, move[1]):
+                    gs.undoMove()
+                return
+            else:
+                for i in gs.getValidMoves():
+                    temp = move[0].copy()
+                    temp.append(i)
+                    queue.append((temp, move[1] + 1))
+        for i in range(0, move[1]):
+            gs.undoMove()
+    print('none')
+    return moveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, turnMultiplier)
