@@ -5,6 +5,7 @@ pieceScore = { "K": 0, "Q": 10, "R":5, "B":3.5, "N":4.25, "P":1}
 CHECKMATE = 1000
 STALEMATE = 0
 DEPTH = 3
+CHECKMATEDEPTH = 3
 
 
 def findRandomMove(validMoves):
