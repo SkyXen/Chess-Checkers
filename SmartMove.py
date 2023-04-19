@@ -47,7 +47,8 @@ def findBestMove(gs, validMoves):
     global nextMove
     nextMove = None
     random.shuffle(validMoves)
-    moveNegaMaxAlphaBeta1(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
+    moveNegaMax2(gs, validMoves,  1 if gs.whiteToMove else -1, CHECKMATEDEPTH)
+    # moveNegaMaxAlphaBeta1(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
     return nextMove
 
 def minMax(gs, validMoves, depth, whiteToMove):
@@ -168,7 +169,7 @@ def scoreboard3(gs):
         score += white_checks - black_checks
     return score
 
-    
+
 
 
 def scoreBoard(gs):
